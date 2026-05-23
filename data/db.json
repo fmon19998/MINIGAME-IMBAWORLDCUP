@@ -1,0 +1,106 @@
+{
+  "vouchers": [],
+  "results": [],
+  "audit": [
+    {
+      "id": "60dc53da-23c0-49a6-b15b-97c37af69080",
+      "action": "CREATE_VOUCHER",
+      "detail": {
+        "voucherId": "1dcfcbed-78bb-4090-9b1d-695782e21f24",
+        "code": "FREE-81D49CF9",
+        "voucherType": "FREE",
+        "imbaslotUsername": "andi4545"
+      },
+      "createdAt": "2026-05-23T12:44:36.275Z"
+    },
+    {
+      "id": "b96bc458-375f-4371-92ef-46a87f0b8842",
+      "action": "MEMBER_LOGIN",
+      "detail": {
+        "voucherId": "1dcfcbed-78bb-4090-9b1d-695782e21f24",
+        "code": "FREE-81D49CF9"
+      },
+      "createdAt": "2026-05-23T12:58:06.514Z"
+    },
+    {
+      "id": "0d121bb8-76cd-489d-b277-dd978b8dbbf0",
+      "action": "START_GAME",
+      "detail": {
+        "voucherId": "1dcfcbed-78bb-4090-9b1d-695782e21f24",
+        "code": "FREE-81D49CF9"
+      },
+      "createdAt": "2026-05-23T12:58:09.787Z"
+    },
+    {
+      "id": "c934dc87-d3cd-4e7f-887f-08b646d1a113",
+      "action": "SUBMIT_SCORE",
+      "detail": {
+        "voucherId": "1dcfcbed-78bb-4090-9b1d-695782e21f24",
+        "code": "FREE-81D49CF9",
+        "saved": 30,
+        "reward": 0,
+        "status": "LOSE"
+      },
+      "createdAt": "2026-05-23T12:59:09.816Z"
+    },
+    {
+      "id": "c9fbe88a-a61b-47da-9572-3ba3d8ebea53",
+      "action": "CREATE_VOUCHER",
+      "detail": {
+        "voucherId": "badb6dac-3780-4040-8e7a-a83be9a97535",
+        "code": "FREE-AB9E5080",
+        "voucherType": "FREE",
+        "imbaslotUsername": "ferdi123"
+      },
+      "createdAt": "2026-05-23T13:18:50.635Z"
+    },
+    {
+      "id": "a42b5fae-3c32-452f-bcd1-80fe7eca0029",
+      "action": "MEMBER_LOGIN",
+      "detail": {
+        "voucherId": "badb6dac-3780-4040-8e7a-a83be9a97535",
+        "code": "FREE-AB9E5080"
+      },
+      "createdAt": "2026-05-23T13:19:22.891Z"
+    },
+    {
+      "id": "0efee273-8c3c-45ea-b7ed-63459b276864",
+      "action": "START_GAME",
+      "detail": {
+        "voucherId": "badb6dac-3780-4040-8e7a-a83be9a97535",
+        "code": "FREE-AB9E5080"
+      },
+      "createdAt": "2026-05-23T13:19:28.028Z"
+    },
+    {
+      "id": "8c45fbee-939a-4613-b83c-5761ea4bbed3",
+      "action": "SUBMIT_SCORE",
+      "detail": {
+        "voucherId": "badb6dac-3780-4040-8e7a-a83be9a97535",
+        "code": "FREE-AB9E5080",
+        "saved": 34,
+        "reward": 0,
+        "status": "LOSE"
+      },
+      "createdAt": "2026-05-23T13:20:28.051Z"
+    },
+    {
+      "id": "f883c0c2-ae34-4e1b-82fa-29523b7a1a05",
+      "action": "DELETE_VOUCHER",
+      "detail": {
+        "voucherId": "badb6dac-3780-4040-8e7a-a83be9a97535",
+        "code": "FREE-AB9E5080"
+      },
+      "createdAt": "2026-05-23T13:59:44.332Z"
+    },
+    {
+      "id": "040a0670-1bbe-4756-ba52-92ab5ebf846c",
+      "action": "DELETE_VOUCHER",
+      "detail": {
+        "voucherId": "1dcfcbed-78bb-4090-9b1d-695782e21f24",
+        "code": "FREE-81D49CF9"
+      },
+      "createdAt": "2026-05-23T13:59:46.835Z"
+    }
+  ]
+}

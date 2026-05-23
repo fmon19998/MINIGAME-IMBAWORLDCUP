@@ -1,0 +1,16 @@
+{
+  "name": "imbaworld-cup-minigame",
+  "version": "1.0.0",
+  "description": "IMBAWORLD CUP mini game: admin dashboard + member goalkeeper game with one-time voucher code/password.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
