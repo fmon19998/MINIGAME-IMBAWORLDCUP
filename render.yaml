@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: imbaworld-cup-minigame
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
+      - key: ADMIN_PANEL_KEY
+        sync: false
+      - key: APP_SECRET
+        sync: false
+      - key: DATA_DIR
+        value: /var/data
