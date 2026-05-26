@@ -23,7 +23,8 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'imbaworld2026';
 const ADMIN_PANEL_KEY = process.env.ADMIN_PANEL_KEY || 'IMBA-ADMIN-2026';
 const APP_SECRET = process.env.APP_SECRET || 'IMBAWORLD-CUP-LOCAL-SECRET-CHANGE-ME';
 
-const DATA_PATH = path.join(__dirname, 'data', 'db.json');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DATA_PATH = process.env.DATA_PATH || path.join(DATA_DIR, 'db.json');
 const PUBLIC_PATH = path.join(__dirname, 'public');
 
 app.use(express.json({ limit: '1mb' }));
@@ -127,6 +128,80 @@ function randomPassword() {
   return pass;
 }
 
+const GAME_MODES = {
+  BABY: {
+    key: 'BABY',
+    adminLabel: 'MODE BAYI (SANGAT MUDAH)',
+    weight: 34,
+    config: {
+      spawnMultiplier: 1.45,
+      speedMultiplier: 0.74,
+      curveMultiplier: 0.55,
+      ballSizeBonus: 5,
+      keeperWidthBonus: 42,
+      doubleSpawnChance: 0.12,
+      staminaDrainMultiplier: 0.72,
+      scoreMultiplier: 0.9
+    }
+  },
+  NORMAL: {
+    key: 'NORMAL',
+    adminLabel: 'MODE B AJA (NORMAL)',
+    weight: 33,
+    config: {
+      spawnMultiplier: 1,
+      speedMultiplier: 1,
+      curveMultiplier: 1,
+      ballSizeBonus: 0,
+      keeperWidthBonus: 0,
+      doubleSpawnChance: 0.62,
+      staminaDrainMultiplier: 1,
+      scoreMultiplier: 1
+    }
+  },
+  HELL: {
+    key: 'HELL',
+    adminLabel: 'MODE NERAKA (SUSAH BANGET)',
+    weight: 33,
+    config: {
+      spawnMultiplier: 0.72,
+      speedMultiplier: 1.28,
+      curveMultiplier: 1.45,
+      ballSizeBonus: -2,
+      keeperWidthBonus: -10,
+      doubleSpawnChance: 0.82,
+      staminaDrainMultiplier: 1.35,
+      scoreMultiplier: 1.25
+    }
+  }
+};
+
+function pickHiddenGameMode() {
+  const modes = Object.values(GAME_MODES);
+  const total = modes.reduce((sum, mode) => sum + Number(mode.weight || 1), 0);
+  let roll = Math.random() * total;
+  for (const mode of modes) {
+    roll -= Number(mode.weight || 1);
+    if (roll <= 0) return mode;
+  }
+  return GAME_MODES.NORMAL;
+}
+
+function getGameMode(modeKey) {
+  const key = safeUpper(modeKey || 'NORMAL');
+  return GAME_MODES[key] || GAME_MODES.NORMAL;
+}
+
+function publicGameConfig(mode) {
+  return { ...(mode?.config || GAME_MODES.NORMAL.config) };
+}
+
+function memberResultPublic(result) {
+  if (!result) return null;
+  const { gameModeLabel, gameModeKey, gameConfig, ...safeResult } = result;
+  return safeResult;
+}
+
 function b64url(input) {
   return Buffer.from(input).toString('base64url');
 }
@@ -214,9 +289,21 @@ function voucherPublic(v) {
     loginAt: v.loginAt || null,
     gameStartedAt: v.gameStartedAt || null,
     gameEndedAt: v.gameEndedAt || null,
+    result: memberResultPublic(v.result) || null
+  };
+}
+
+function adminVoucherPublic(v) {
+  const mode = getGameMode(v.gameModeKey || 'NORMAL');
+  return {
+    ...voucherPublic(v),
+    gameModeKey: v.gameModeKey || mode.key,
+    gameModeLabel: v.gameModeLabel || mode.adminLabel,
     result: v.result || null
   };
 }
+
+app.get('/healthz', (req, res) => res.json({ ok: true, app: 'IMBAWORLD CUP', time: nowIso() }));
 
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_PATH, 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(PUBLIC_PATH, 'admin.html')));
@@ -237,7 +324,7 @@ app.post('/api/admin/login', (req, res) => {
 
 app.get('/api/admin/dashboard', requireAdmin, (req, res) => {
   const db = readDb();
-  const vouchers = db.vouchers.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).map(voucherPublic);
+  const vouchers = db.vouchers.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).map(adminVoucherPublic);
   const results = db.results.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   res.json({ stats: summarize(db), vouchers, results });
 });
@@ -248,11 +335,14 @@ app.post('/api/admin/vouchers', requireAdmin, (req, res) => {
   const imbaslotUsername = safeText(req.body.imbaslotUsername, 40);
   const telegram = safeText(req.body.telegram, 60);
   const voucherType = ['FREE', 'DEPOSIT'].includes(req.body.voucherType) ? req.body.voucherType : 'FREE';
+  const requestedGameModeKey = safeUpper(req.body.gameModeKey || 'NORMAL');
+  const selectedGameMode = GAME_MODES[requestedGameModeKey];
   const hasStartedBot = Boolean(req.body.hasStartedBot);
 
   if (!playerName) return res.status(400).json({ error: 'Nama player wajib diisi.' });
   if (!imbaslotUsername) return res.status(400).json({ error: 'Username akun IMBASLOT wajib diisi agar limit harian bisa dicek.' });
   if (!telegram) return res.status(400).json({ error: 'Telegram player wajib diisi.' });
+  if (!selectedGameMode) return res.status(400).json({ error: 'Mode game tidak valid. Pilih Mode Bayi, B Aja, atau Neraka.' });
   if (!hasStartedBot) return res.status(400).json({ error: 'Player harus /start di bot Telegram admin terlebih dahulu.' });
 
   const today = todayKey();
@@ -290,12 +380,15 @@ app.post('/api/admin/vouchers', requireAdmin, (req, res) => {
     gameStartedAt: null,
     gameEndedAt: null,
     gameTokenHash: null,
+    gameModeKey: selectedGameMode.key,
+    gameModeLabel: selectedGameMode.adminLabel,
+    gameConfig: publicGameConfig(selectedGameMode),
     result: null
   };
   db.vouchers.push(voucher);
-  db.audit.push({ id: crypto.randomUUID(), action: 'CREATE_VOUCHER', detail: { voucherId: voucher.id, code: voucher.code, voucherType, imbaslotUsername }, createdAt: nowIso() });
+  db.audit.push({ id: crypto.randomUUID(), action: 'CREATE_VOUCHER', detail: { voucherId: voucher.id, code: voucher.code, voucherType, imbaslotUsername, selectedMode: selectedGameMode.adminLabel }, createdAt: nowIso() });
   writeDb(db);
-  res.status(201).json({ voucher: voucherPublic(voucher), stats: summarize(db) });
+  res.status(201).json({ voucher: adminVoucherPublic(voucher), stats: summarize(db) });
 });
 
 app.post('/api/admin/vouchers/:id/reset', requireAdmin, (req, res) => {
@@ -307,11 +400,17 @@ app.post('/api/admin/vouchers/:id/reset', requireAdmin, (req, res) => {
   voucher.gameStartedAt = null;
   voucher.gameEndedAt = null;
   voucher.gameTokenHash = null;
+  if (!voucher.gameModeKey || !GAME_MODES[voucher.gameModeKey]) {
+    const fallbackMode = GAME_MODES.NORMAL;
+    voucher.gameModeKey = fallbackMode.key;
+    voucher.gameModeLabel = fallbackMode.adminLabel;
+    voucher.gameConfig = publicGameConfig(fallbackMode);
+  }
   voucher.result = null;
   db.results = db.results.filter(r => r.voucherId !== voucher.id);
   db.audit.push({ id: crypto.randomUUID(), action: 'RESET_VOUCHER', detail: { voucherId: voucher.id, code: voucher.code }, createdAt: nowIso() });
   writeDb(db);
-  res.json({ voucher: voucherPublic(voucher), stats: summarize(db) });
+  res.json({ voucher: adminVoucherPublic(voucher), stats: summarize(db) });
 });
 
 app.delete('/api/admin/vouchers/:id', requireAdmin, (req, res) => {
@@ -351,12 +450,26 @@ app.post('/api/member/start-game', requireMember, (req, res) => {
   if (!['LOGIN_USED'].includes(voucher.status)) return res.status(409).json({ error: 'Sesi game tidak bisa dimulai dari status saat ini.' });
 
   const rawGameToken = crypto.randomBytes(32).toString('hex');
+  const assignedMode = getGameMode(voucher.gameModeKey || 'NORMAL');
   voucher.gameTokenHash = crypto.createHash('sha256').update(rawGameToken).digest('hex');
   voucher.gameStartedAt = nowIso();
+  voucher.gameModeKey = assignedMode.key;
+  voucher.gameModeLabel = assignedMode.adminLabel;
+  voucher.gameConfig = publicGameConfig(assignedMode);
   voucher.status = 'PLAYING';
-  db.audit.push({ id: crypto.randomUUID(), action: 'START_GAME', detail: { voucherId: voucher.id, code: voucher.code }, createdAt: nowIso() });
+  db.audit.push({
+    id: crypto.randomUUID(),
+    action: 'START_GAME',
+    detail: { voucherId: voucher.id, code: voucher.code, assignedMode: assignedMode.adminLabel },
+    createdAt: nowIso()
+  });
   writeDb(db);
-  res.json({ gameToken: rawGameToken, startedAt: voucher.gameStartedAt, durationSeconds: 60 });
+  res.json({
+    gameToken: rawGameToken,
+    startedAt: voucher.gameStartedAt,
+    durationSeconds: 60,
+    gameConfig: publicGameConfig(assignedMode)
+  });
 });
 
 app.post('/api/member/submit-score', requireMember, (req, res) => {
@@ -385,7 +498,7 @@ app.post('/api/member/submit-score', requireMember, (req, res) => {
   if (duration > 90) {
     return res.status(400).json({ error: 'Durasi game terlalu panjang. Sesi dianggap tidak valid.' });
   }
-  if (saved > 150 || totalBalls > 220) {
+  if (saved > 260 || totalBalls > 420) {
     return res.status(400).json({ error: 'Score melebihi batas normal game. Mohon hubungi admin.' });
   }
 
@@ -407,6 +520,8 @@ app.post('/api/member/submit-score', requireMember, (req, res) => {
     imbaslotUsername: voucher.imbaslotUsername,
     telegram: voucher.telegram,
     voucherType: voucher.voucherType,
+    gameModeKey: voucher.gameModeKey || 'UNKNOWN',
+    gameModeLabel: voucher.gameModeLabel || 'UNKNOWN',
     saved,
     missed,
     totalBalls,
@@ -424,7 +539,7 @@ app.post('/api/member/submit-score', requireMember, (req, res) => {
   db.results.push(result);
   db.audit.push({ id: crypto.randomUUID(), action: 'SUBMIT_SCORE', detail: { voucherId: voucher.id, code: voucher.code, saved, reward, status: statusText }, createdAt: nowIso() });
   writeDb(db);
-  res.json({ result, stats: summarize(db) });
+  res.json({ result: memberResultPublic(result), stats: summarize(db) });
 });
 
 app.get('/api/member/me', requireMember, (req, res) => {
@@ -441,6 +556,7 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
   console.log(`IMBAWORLD CUP running at http://localhost:${PORT}`);
+  console.log(`Data path: ${DATA_PATH}`);
   console.log(`Admin gate: http://localhost:${PORT}/admin`);
   console.log(`Admin direct: http://localhost:${PORT}/admin?key=${ADMIN_PANEL_KEY}`);
   console.log(`Member game: http://localhost:${PORT}/member`);
