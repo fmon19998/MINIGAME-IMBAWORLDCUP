@@ -218,3 +218,10 @@ Gameplay minigame direvisi total menjadi pandangan depan. Bola datang dari depan
 - Tier mode admin: `MODE BAYI`, `MODE B AJA`, dan `MODE NERAKA`.
 - `MODE NERAKA` dibuat sangat ekstrem: bola super cepat, spawn rapat, burst bola, kontrol berat, dan area tangkap kecil.
 - Player tetap tidak melihat mode/tier yang dipilih admin.
+
+
+## V15 Rule Update
+- Target display tetap 60 bola.
+- Klaim reward hanya jika tepis lebih dari 60 dan kebobolan maksimal 60.
+- Mode Neraka tidak lagi spam bola terlalu banyak; dibuat cepat, normal jumlahnya, dan berkelok tajam.
+- Kontrol touch diperbaiki untuk iPhone/Safari, Android/Chrome, dan PC/Chrome.
