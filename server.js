@@ -131,47 +131,65 @@ function randomPassword() {
 const GAME_MODES = {
   BABY: {
     key: 'BABY',
-    adminLabel: 'MODE BAYI (SANGAT MUDAH)',
+    adminLabel: 'TIER MODE BAYI (SANGAT MUDAH)',
     weight: 34,
     config: {
-      spawnMultiplier: 1.45,
-      speedMultiplier: 0.74,
-      curveMultiplier: 0.55,
-      ballSizeBonus: 5,
-      keeperWidthBonus: 42,
-      doubleSpawnChance: 0.12,
-      staminaDrainMultiplier: 0.72,
-      scoreMultiplier: 0.9
+      spawnMultiplier: 1.68,
+      speedMultiplier: 0.62,
+      curveMultiplier: 0.42,
+      ballSizeBonus: 8,
+      keeperWidthBonus: 64,
+      doubleSpawnChance: 0.05,
+      burstSpawnChance: 0,
+      burstSpawnCount: 0,
+      staminaDrainMultiplier: 0.55,
+      scoreMultiplier: 0.85,
+      controlResistance: 0.82,
+      targetEdgeBias: 0,
+      targetJitter: 0.55,
+      chaosMultiplier: 0.62
     }
   },
   NORMAL: {
     key: 'NORMAL',
-    adminLabel: 'MODE B AJA (NORMAL)',
+    adminLabel: 'TIER MODE B AJA (NORMAL)',
     weight: 33,
     config: {
-      spawnMultiplier: 1,
-      speedMultiplier: 1,
+      spawnMultiplier: 0.95,
+      speedMultiplier: 1.05,
       curveMultiplier: 1,
       ballSizeBonus: 0,
       keeperWidthBonus: 0,
-      doubleSpawnChance: 0.62,
+      doubleSpawnChance: 0.52,
+      burstSpawnChance: 0.10,
+      burstSpawnCount: 1,
       staminaDrainMultiplier: 1,
-      scoreMultiplier: 1
+      scoreMultiplier: 1,
+      controlResistance: 1,
+      targetEdgeBias: 0.18,
+      targetJitter: 1,
+      chaosMultiplier: 1
     }
   },
   HELL: {
     key: 'HELL',
-    adminLabel: 'MODE NERAKA (SUSAH BANGET)',
+    adminLabel: 'TIER MODE NERAKA (DEWA PUN SUSAH)',
     weight: 33,
     config: {
-      spawnMultiplier: 0.72,
-      speedMultiplier: 1.28,
-      curveMultiplier: 1.45,
-      ballSizeBonus: -2,
-      keeperWidthBonus: -10,
-      doubleSpawnChance: 0.82,
-      staminaDrainMultiplier: 1.35,
-      scoreMultiplier: 1.25
+      spawnMultiplier: 0.12,
+      speedMultiplier: 3.65,
+      curveMultiplier: 3.45,
+      ballSizeBonus: -11,
+      keeperWidthBonus: -104,
+      doubleSpawnChance: 0.99,
+      burstSpawnChance: 0.99,
+      burstSpawnCount: 5,
+      staminaDrainMultiplier: 4.4,
+      scoreMultiplier: 1.65,
+      controlResistance: 3.65,
+      targetEdgeBias: 0.99,
+      targetJitter: 2.25,
+      chaosMultiplier: 2.9
     }
   }
 };
