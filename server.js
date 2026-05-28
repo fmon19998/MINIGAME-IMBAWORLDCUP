@@ -173,23 +173,23 @@ const GAME_MODES = {
   },
   HELL: {
     key: 'HELL',
-    adminLabel: 'TIER MODE NERAKA (DEWA PUN SUSAH)',
+    adminLabel: 'TIER MODE NERAKA (CEPAT & BERKELOK)',
     weight: 33,
     config: {
-      spawnMultiplier: 0.12,
-      speedMultiplier: 3.65,
-      curveMultiplier: 3.45,
-      ballSizeBonus: -11,
-      keeperWidthBonus: -104,
-      doubleSpawnChance: 0.99,
-      burstSpawnChance: 0.99,
-      burstSpawnCount: 5,
-      staminaDrainMultiplier: 4.4,
-      scoreMultiplier: 1.65,
-      controlResistance: 3.65,
-      targetEdgeBias: 0.99,
-      targetJitter: 2.25,
-      chaosMultiplier: 2.9
+      spawnMultiplier: 0.88,
+      speedMultiplier: 2.85,
+      curveMultiplier: 3.65,
+      ballSizeBonus: -8,
+      keeperWidthBonus: -82,
+      doubleSpawnChance: 0.18,
+      burstSpawnChance: 0,
+      burstSpawnCount: 0,
+      staminaDrainMultiplier: 2.55,
+      scoreMultiplier: 1.45,
+      controlResistance: 2.20,
+      targetEdgeBias: 0.86,
+      targetJitter: 2.35,
+      chaosMultiplier: 3.10
     }
   }
 };
@@ -457,7 +457,7 @@ app.post('/api/member/login', (req, res) => {
   const token = signToken({ role: 'member', voucherId: voucher.id, code: voucher.code, iat: Date.now(), exp: Date.now() + 1000 * 60 * 30 });
   db.audit.push({ id: crypto.randomUUID(), action: 'MEMBER_LOGIN', detail: { voucherId: voucher.id, code: voucher.code }, createdAt: nowIso() });
   writeDb(db);
-  res.json({ token, player: voucherPublic(voucher), rules: { durationSeconds: 60, targetScore: 60, rewardWin: 15000, rewardSuper: 20000 } });
+  res.json({ token, player: voucherPublic(voucher), rules: { durationSeconds: 60, targetScore: 60, maxMissed: 60, rewardSuper: 20000 } });
 });
 
 app.post('/api/member/start-game', requireMember, (req, res) => {
@@ -522,12 +522,10 @@ app.post('/api/member/submit-score', requireMember, (req, res) => {
 
   let reward = 0;
   let statusText = 'LOSE';
-  if (saved > 60) {
+  const claimEligible = saved > 60 && missed <= 60;
+  if (claimEligible) {
     reward = 20000;
     statusText = 'SUPER_WIN';
-  } else if (saved === 60) {
-    reward = 15000;
-    statusText = 'WIN';
   }
 
   const result = {
@@ -547,7 +545,7 @@ app.post('/api/member/submit-score', requireMember, (req, res) => {
     reward,
     status: statusText,
     createdAt: nowIso(),
-    note: reward > 0 ? 'Screenshot hasil dan kirim ke ADMIN IMBASLOT.' : 'Belum mencapai target 60 tepisan.'
+    note: reward > 0 ? 'Screenshot hasil dan kirim ke ADMIN IMBASLOT.' : 'Syarat belum terpenuhi: tepis harus lebih dari 60 dan kebobolan maksimal 60.'
   };
 
   voucher.status = 'FINISHED';
